@@ -131,18 +131,5 @@ class FeaturesTransformer(BaseEstimator, TransformerMixin):
         ]
         X = X.drop(columns=[c for c in raw_cols if c in X.columns])
 
-        # X=X.drop(columns=['Curricular_units_1st_sem_credited',
-        #                     'Curricular_units_1st_sem_enrolled',
-        #                     'Curricular_units_1st_sem_evaluations',
-        #                     'Curricular_units_1st_sem_approved',
-        #                     'Curricular_units_1st_sem_grade',
-        #                     'Curricular_units_1st_sem_without_evaluations',
-        #                     'Curricular_units_2nd_sem_credited',
-        #                     'Curricular_units_2nd_sem_enrolled',
-        #                     'Curricular_units_2nd_sem_evaluations',
-        #                     'Curricular_units_2nd_sem_approved',
-        #                     'Curricular_units_2nd_sem_grade',
-        #                     'Curricular_units_2nd_sem_without_evaluations'])
-
-     
+    
         return X
