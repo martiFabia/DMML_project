@@ -113,6 +113,31 @@ class FeaturesTransformer(BaseEstimator, TransformerMixin):
             - X["eval_completion_rate_1st"]
         )
 
+#*********************************************************
+        # X['low_performance_flag'] = (
+        #     (X['avg_grade'] < 0.4) |
+        #     (X['pass_rate_1st'] < 0.3) |
+        #     (X['pass_rate_2nd'] < 0.3)
+        # ).astype(int)
+
+        # X['financial_risk_flag'] = (
+        #     (X['Tuition_fees_up_to_date'] == 0) &
+        #     (X['Scholarship_holder'] == 0)
+        # ).astype(int)
+
+        # X['academic_stagnation_flag'] = (
+        #     (X['total_enrolled'] > 20) &
+        #     (X['pass_rate_delta'] < -0.3)
+        # ).astype(int)
+
+        # X['at_risk_enrolled_flag'] = (
+        #     X['low_performance_flag'] |
+        #     X['financial_risk_flag'] |
+        #     X['academic_stagnation_flag']
+        # ).astype(int)
+        
+#*********************************************************
+
         # 7)Drop the raw features
         # if self.drop_originals:
         raw_cols = [
