@@ -229,15 +229,20 @@ class StudentFormApp:
         scrollbar.pack(side="right", fill="y")
 
         # --- Title and description ---
-        tk.Label(self.scrollable_frame, text="🎓 Student Outcome Predictor", font=("Helvetica", 16, "bold")).grid(row=0, columnspan=2, pady=(10, 5))
-        tk.Label(self.scrollable_frame, text="Fill in the student's information below. The app will predict whether the student will Dropout, Enroll, or Graduate.",
-                 wraplength=500, justify="left", font=("Arial", 10)).grid(row=1, columnspan=2, pady=(0, 15))
+        tk.Label(self.scrollable_frame, text="🎓 Student Outcome Predictor", font=("Helvetica", 16, "bold")).grid(
+                row=0, column=0, columnspan=4, pady=(10, 5), sticky="n")
+
+        tk.Label(self.scrollable_frame,
+                text="Fill in the student's information below. The app will predict whether the student will Dropout, Enroll, or Graduate.",
+                wraplength=500, justify="center", font=("Arial", 10)).grid(
+                row=1, column=0, columnspan=4, pady=(0, 15), sticky="n")
+
 
         row = 2
         self.inputs = {}
 
         # Model selection
-        tk.Label(self.scrollable_frame, text="Select Model:").grid(row=row, column=0, sticky="w")
+        tk.Label(self.scrollable_frame, text="Select Model:").grid(row=row, column=0, sticky="e")
         self.model_var = tk.StringVar()
         model_dropdown = ttk.Combobox(self.scrollable_frame, textvariable=self.model_var,
                                       values=["random_forest", "LightGBM"], state='readonly')
@@ -245,31 +250,53 @@ class StudentFormApp:
         model_dropdown.grid(row=row, column=1)
         row += 1
 
-        # Categorical inputs
-        for feature, options in categorical_features.items():
-            tk.Label(self.scrollable_frame, text=feature).grid(row=row, column=0, sticky="w")
-            var = tk.StringVar()
-            dropdown = ttk.Combobox(self.scrollable_frame, textvariable=var, values=options, state='readonly')
-            dropdown.grid(row=row, column=1)
-            self.inputs[feature] = var
+        # Pairing categorical and numerical features side by side
+        cat_num_pairs = list(zip(categorical_features.items(), numerical_features))
+        for (cat_feat, cat_options), num_feat in cat_num_pairs:
+            # Categorical
+            tk.Label(self.scrollable_frame, text=cat_feat, anchor="center").grid(row=row, column=0, sticky="e", padx=10, pady=5)
+            cat_var = tk.StringVar()
+            cat_dropdown = ttk.Combobox(self.scrollable_frame, textvariable=cat_var, values=cat_options, state='readonly')
+            cat_dropdown.grid(row=row, column=1, padx=10, pady=5)
+            self.inputs[cat_feat] = cat_var
+
+            # Numerical
+            tk.Label(self.scrollable_frame, text=num_feat, anchor="center").grid(row=row, column=2, sticky="e", padx=10, pady=5)
+            num_entry = tk.Entry(self.scrollable_frame)
+            num_entry.grid(row=row, column=3, padx=10, pady=5)
+            self.inputs[num_feat] = num_entry
+
             row += 1
 
-        # Numerical inputs
-        for feature in numerical_features:
-            tk.Label(self.scrollable_frame, text=feature).grid(row=row, column=0, sticky="w")
-            entry = tk.Entry(self.scrollable_frame)
-            entry.grid(row=row, column=1)
-            self.inputs[feature] = entry
-            row += 1
+        # Se ci sono feature dispari, gestisci quelle rimanenti
+        if len(categorical_features) > len(numerical_features):
+            for cat_feat in list(categorical_features.keys())[len(numerical_features):]:
+                tk.Label(self.scrollable_frame, text=cat_feat, anchor="center").grid(row=row, column=0, sticky="e", padx=10, pady=5)
+                cat_var = tk.StringVar()
+                cat_dropdown = ttk.Combobox(self.scrollable_frame, textvariable=cat_var, values=categorical_features[cat_feat], state='readonly')
+                cat_dropdown.grid(row=row, column=1, padx=10, pady=5)
+                self.inputs[cat_feat] = cat_var
+                row += 1
+
+        elif len(numerical_features) > len(categorical_features):
+            for num_feat in numerical_features[len(categorical_features):]:
+                tk.Label(self.scrollable_frame, text=num_feat, anchor="center").grid(row=row, column=2, sticky="e", padx=10, pady=5)
+                num_entry = tk.Entry(self.scrollable_frame)
+                num_entry.grid(row=row, column=3, padx=10, pady=5)
+                self.inputs[num_feat] = num_entry
+                row += 1
 
         # Predict and reset buttons
-        tk.Button(self.scrollable_frame, text="Predict", command=self.on_predict).grid(row=row, column=0, pady=10)
-        tk.Button(self.scrollable_frame, text="Reset", command=self.on_reset).grid(row=row, column=1, pady=10)
+        button_frame = tk.Frame(self.scrollable_frame)
+        button_frame.grid(row=row, column=0, columnspan=4, pady=10)
+
+        tk.Button(button_frame, text="Predict", command=self.on_predict).pack(side="left", padx=20)
+        tk.Button(button_frame, text="Reset", command=self.on_reset).pack(side="left", padx=20)
         row += 1
 
         # Result label
         self.result_label = tk.Label(self.scrollable_frame, text="", font=("Arial", 12), fg="blue")
-        self.result_label.grid(row=row, columnspan=2, pady=10)
+        self.result_label.grid(row=row, column=0, columnspan=4, pady=10)
 
     def on_predict(self):
         model_name = self.model_var.get().replace(" ", "").lower()
@@ -330,6 +357,6 @@ class StudentFormApp:
 # Run the app
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("600x700")
+    root.geometry("800x900")
     app = StudentFormApp(root)
     root.mainloop()
