@@ -19,7 +19,6 @@ num_cols = [ "Previous_qualification_grade", "Admission_grade", "Age", "Unemploy
 binary_cols = ["Daytime/evening_attendance","Displaced", "Debtor", "Tuition_fees_up_to_date", "Scholarship_holder"]
 
 
-
 # Preprocessing pipeline for numerical and categorical features
 preprocessor = ColumnTransformer(
     transformers=[
