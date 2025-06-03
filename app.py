@@ -4,14 +4,15 @@ import joblib
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
+import numpy as np
 import sys
 import os
+import warnings
 sys.path.append(os.path.join(os.path.dirname(__file__), 'notebook'))
 
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
 
-# from notebook.FeaturesTrasformer import FeaturesTransformer
-# from notebook.preprocessor import preprocessor
 
 
 # Categorical features and example values
@@ -245,7 +246,7 @@ class StudentFormApp:
         tk.Label(self.scrollable_frame, text="Select Model:").grid(row=row, column=0, sticky="e")
         self.model_var = tk.StringVar()
         model_dropdown = ttk.Combobox(self.scrollable_frame, textvariable=self.model_var,
-                                      values=["random_forest", "LightGBM"], state='readonly')
+                                      values=["random_forest", "CatBoost"], state='readonly')
         model_dropdown.set("random_forest")
         model_dropdown.grid(row=row, column=1)
         row += 1
@@ -297,6 +298,12 @@ class StudentFormApp:
         # Result label
         self.result_label = tk.Label(self.scrollable_frame, text="", font=("Arial", 12), fg="blue")
         self.result_label.grid(row=row, column=0, columnspan=4, pady=10)
+        row += 1
+        # SHAP explanation label
+        self.shap_label = tk.Label(self.scrollable_frame, text="", font=("Courier", 10))
+        self.shap_label.grid(row=row, column=0, columnspan=4, pady=10)
+
+    
 
     def on_predict(self):
         model_name = self.model_var.get().replace(" ", "").lower()
@@ -340,9 +347,25 @@ class StudentFormApp:
 
         try:
             prediction = pipeline.predict(df)[0]
-            result = label_mapping.get(prediction, f"Unknown ({prediction})")
+            if isinstance(prediction, np.ndarray):
+                prediction = prediction.item()
+
+            # Gestisci se è int (class index) oppure stringa diretta (es. 'Dropout')
+            if isinstance(prediction, str):
+                result = prediction
+            else:
+                result = label_mapping.get(prediction, f"Unknown ({prediction})")
             color = {"Dropout": "red", "Enrolled": "orange", "Graduate": "green"}.get(result, "black")
             self.result_label.config(text=f"Predicted outcome: {result}", fg=color)
+
+            explanation_text = self.explain_prediction(pipeline, df)
+            prob_array = pipeline.predict_proba(df)[0]  # es: [0.2, 0.3, 0.5]
+            class_labels = ["Dropout", "Enrolled", "Graduate"]
+            probs = dict(zip(class_labels, prob_array))
+
+            self.show_prediction_details(model_name=self.model_var.get(), probs=probs, shap_explanation=explanation_text)
+            
+
         except Exception as e:
             self.result_label.config(text=f"Prediction error: {e}", fg="red")
 
@@ -353,6 +376,68 @@ class StudentFormApp:
             elif isinstance(widget, tk.StringVar):
                 widget.set('')
         self.result_label.config(text="")
+
+
+    def explain_prediction(self, pipeline, X_input):
+        # Recupera modello e preprocessing
+        model = pipeline.named_steps['model']
+        preprocessor = pipeline.named_steps['preprocessing']
+        feature_engineer = pipeline.named_steps.get('feature_transformer', None)
+        
+        X_feat = feature_engineer.transform(X_input)
+        X_proc = preprocessor.transform(X_feat)
+
+        if hasattr(X_proc, "toarray"):
+                X_proc = X_proc.toarray()
+
+        feature_names = preprocessor.get_feature_names_out()
+
+        # Crea SHAP explainer
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(X_proc)
+        
+        # Seleziona la classe predetta per questa istanza
+        predicted_class = model.predict(X_proc)[0]
+        shap_instance = shap_values[0]                     
+        shap_feature_values = shap_instance[:, predicted_class]  
+
+        # Crea dizionario delle feature con il valore SHAP
+        shap_dict = dict(zip(feature_names, shap_feature_values))
+        top_features = sorted(shap_dict.items(), key=lambda x: abs(x[1]), reverse=True)[:5]
+
+        # Formatta testo
+        explanation = "Top 5 influential features:\n"
+        for name, val in top_features:
+            val = float(np.ravel(val)[0]) if isinstance(val, np.ndarray) else float(val)
+            direction = "↑" if val > 0 else "↓"
+            explanation += f"{name}: {direction} impact ({val:.3f})\n"
+
+        return explanation
+    
+    def show_prediction_details(self, model_name, probs, shap_explanation):
+
+        win = tk.Toplevel(self.root)
+        win.title(f"Prediction Details — {model_name}")
+        win.geometry("450x400")
+
+        # Probabilità
+        prob_frame = tk.LabelFrame(win, text="Class Probabilities", font=("Helvetica", 11, "bold"))
+        prob_frame.pack(padx=10, pady=10, fill="both")
+
+        for label, prob in probs.items():
+            tk.Label(prob_frame, text=f"{label}: {prob:.2%}", anchor="w", font=("Courier", 10)).pack(fill="x", padx=10)
+
+        # Spiegazione SHAP
+        shap_frame = tk.LabelFrame(win, text="Top SHAP Features", font=("Helvetica", 11, "bold"))
+        shap_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+        shap_text = tk.Text(shap_frame, wrap="word", font=("Courier", 10), height=10)
+        shap_text.insert("1.0", shap_explanation)
+        shap_text.configure(state="disabled")
+        shap_text.pack(padx=10, pady=5, fill="both", expand=True)
+
+
+   
 
 # Run the app
 if __name__ == "__main__":

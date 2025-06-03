@@ -62,7 +62,7 @@ class FeatTransformer(BaseEstimator, TransformerMixin):
         # Age bins
         X['age_bin'] = pd.cut(X['Age'], bins=[0, 20, 25, 100], labels=['young', 'medium', 'adult'])
 
-        # Parental background score (simplified: counts how many high attributes are present)
+        # Parental background score 
         def background_score(row):
             score = 0
             if str(row['Mother_qualification']).isdigit():
