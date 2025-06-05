@@ -10,12 +10,13 @@ cat_cols = ["Application_mode", "Course", "Gender", "Previous_qualification",
             "Father_occupation"]   
 
 num_cols = [ "Previous_qualification_grade", "Admission_grade", "Age", "Unemployment_rate", 
-             "GDP", "avg_grade", "delta_approved_units", "parent_background_score",
+             "GDP", "weighted_avg_grade", "parent_background_score",
              'Curricular_units_1st_sem_credited', 'Curricular_units_2nd_sem_credited', 
              'Curricular_units_1st_sem_enrolled', 'Curricular_units_2nd_sem_enrolled',
              'Curricular_units_1st_sem_evaluations', 'Curricular_units_2nd_sem_evaluations',
              'Curricular_units_1st_sem_approved', 'Curricular_units_2nd_sem_approved',
              'Curricular_units_1st_sem_without_evaluations', 'Curricular_units_2nd_sem_without_evaluations',
+             'Curricular_units_1st_sem_grade', 'Curricular_units_2nd_sem_grade',
              'pass_rate_1st', 'pass_rate_2nd', 'approved_delta', 'total_enrolled']
 
 binary_cols = ["Daytime/evening_attendance","Displaced", "Debtor", "Tuition_fees_up_to_date", "Scholarship_holder"]

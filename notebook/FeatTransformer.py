@@ -27,14 +27,14 @@ class FeatTransformer(BaseEstimator, TransformerMixin):
         X = X.copy()
 
         # Average grade across semesters
-        X["avg_grade"] = X[
-            ["Curricular_units_1st_sem_grade", "Curricular_units_2nd_sem_grade"]
-        ].mean(axis=1)
+        X["weighted_avg_grade"] = np.where(
+            (X["Curricular_units_1st_sem_approved"] + X["Curricular_units_2nd_sem_approved"]) > 0,
+            (X["Curricular_units_1st_sem_grade"] * X["Curricular_units_1st_sem_approved"] + X["Curricular_units_2nd_sem_grade"] * X["Curricular_units_2nd_sem_approved"]) /
+            (X["Curricular_units_1st_sem_approved"] + X["Curricular_units_2nd_sem_approved"]),
+            0.0 
+        )
 
-        # Delta in approved units (2nd - 1st semester)
-        X['delta_approved_units'] = X['Curricular_units_2nd_sem_approved'] - X['Curricular_units_1st_sem_approved']
-
-        # 2) Pass rate per semester (avoid division by zero)
+        # Pass rate per semester (avoid division by zero)
         X["pass_rate_1st"] = np.where(
             X["Curricular_units_1st_sem_enrolled"] > 0,
             X["Curricular_units_1st_sem_approved"]
@@ -75,8 +75,6 @@ class FeatTransformer(BaseEstimator, TransformerMixin):
 
         # Drop original columns now represented by engineered features
         X.drop(columns=[
-            'Curricular_units_1st_sem_grade',
-            'Curricular_units_2nd_sem_grade',
             'Mother_qualification',
             'Father_qualification'
         ], inplace=True)

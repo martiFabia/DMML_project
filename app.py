@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 import joblib
 import pandas as pd
 import shap
@@ -307,7 +307,7 @@ class StudentFormApp:
 
     def on_predict(self):
         model_name = self.model_var.get().replace(" ", "").lower()
-        model_path = f"models/best_model_{model_name}.joblib"
+        model_path = f"models_SMOTE/best_model_{model_name}.joblib"
 
         if not os.path.exists(model_path):
             self.result_label.config(text=f"Model file not found: {model_path}", fg="red")
