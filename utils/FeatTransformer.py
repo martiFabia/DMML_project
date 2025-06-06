@@ -6,16 +6,10 @@ import numpy as np
 
 class FeatTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, drop_originals: bool = True):
-        """
-        Parameters
-        ----------
-        drop_originals : bool
-            Whether to drop the raw semester columns after creating
-            the new features.
-        """
+        
         self.drop_originals = drop_originals
     
-    # 👇  questa funzione fa sì che sklearn NON converta in ndarray
+    # questa funzione fa sì che sklearn NON converta in ndarray
     def _more_tags(self):
         return {"preserves_dataframe": True}
 
@@ -73,7 +67,7 @@ class FeatTransformer(BaseEstimator, TransformerMixin):
 
         X['parent_background_score'] = X.apply(background_score, axis=1)
 
-        # Drop original columns now represented by engineered features
+        # Drop original columns now represented by engineered feature
         X.drop(columns=[
             'Mother_qualification',
             'Father_qualification'

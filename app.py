@@ -8,7 +8,7 @@ import numpy as np
 import sys
 import os
 import warnings
-sys.path.append(os.path.join(os.path.dirname(__file__), 'notebook'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
@@ -268,7 +268,7 @@ class StudentFormApp:
 
             row += 1
 
-        # Se ci sono feature dispari, gestisci quelle rimanenti
+        # Handle remaining features if they are not paired
         if len(categorical_features) > len(numerical_features):
             for cat_feat in list(categorical_features.keys())[len(numerical_features):]:
                 tk.Label(self.scrollable_frame, text=cat_feat, anchor="center").grid(row=row, column=0, sticky="e", padx=10, pady=5)
@@ -306,7 +306,7 @@ class StudentFormApp:
 
     def on_predict(self):
         model_name = 'random_forest'
-        model_path = f"models_SMOTE/best_model_{model_name}.joblib"
+        model_path = f"models/best_model_{model_name}.joblib"
 
         if not os.path.exists(model_path):
             self.result_label.config(text=f"Model file not found: {model_path}", fg="red")
@@ -349,7 +349,7 @@ class StudentFormApp:
             if isinstance(prediction, np.ndarray):
                 prediction = prediction.item()
 
-            # Gestisci se è int (class index) oppure stringa diretta (es. 'Dropout')
+            # Check if prediction is a string or numeric
             if isinstance(prediction, str):
                 result = prediction
             else:
@@ -358,7 +358,7 @@ class StudentFormApp:
             self.result_label.config(text=f"Predicted outcome: {result}", fg=color)
 
             explanation_text = self.explain_prediction(pipeline, df)
-            prob_array = pipeline.predict_proba(df)[0]  # es: [0.2, 0.3, 0.5]
+            prob_array = pipeline.predict_proba(df)[0] 
             class_labels = ["Dropout", "Enrolled", "Graduate"]
             probs = dict(zip(class_labels, prob_array))
 
@@ -378,7 +378,7 @@ class StudentFormApp:
 
 
     def explain_prediction(self, pipeline, X_input):
-        # Recupera modello e preprocessing
+       
         model = pipeline.named_steps['model']
         preprocessor = pipeline.named_steps['preprocessing']
         feature_engineer = pipeline.named_steps.get('feature_transformer', None)
@@ -391,20 +391,18 @@ class StudentFormApp:
 
         feature_names = preprocessor.get_feature_names_out()
 
-        # Crea SHAP explainer
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(X_proc)
         
-        # Seleziona la classe predetta per questa istanza
+        # SElect predicted class
         predicted_class = model.predict(X_proc)[0]
-        shap_instance = shap_values[0]                     
+        shap_instance = shap_values[0]                    
         shap_feature_values = shap_instance[:, predicted_class]  
 
-        # Crea dizionario delle feature con il valore SHAP
+        # Create a dictionary of feature names and their SHAP values
         shap_dict = dict(zip(feature_names, shap_feature_values))
         top_features = sorted(shap_dict.items(), key=lambda x: abs(x[1]), reverse=True)[:5]
 
-        # Formatta testo
         explanation = "Top 5 influential features:\n"
         for name, val in top_features:
             val = float(np.ravel(val)[0]) if isinstance(val, np.ndarray) else float(val)
@@ -419,14 +417,14 @@ class StudentFormApp:
         win.title(f"Prediction Details — {model_name}")
         win.geometry("450x400")
 
-        # Probabilità
+        # Probability
         prob_frame = tk.LabelFrame(win, text="Class Probabilities", font=("Helvetica", 11, "bold"))
         prob_frame.pack(padx=10, pady=10, fill="both")
 
         for label, prob in probs.items():
             tk.Label(prob_frame, text=f"{label}: {prob:.2%}", anchor="w", font=("Courier", 10)).pack(fill="x", padx=10)
 
-        # Spiegazione SHAP
+        # SHAP explanation
         shap_frame = tk.LabelFrame(win, text="Top SHAP Features", font=("Helvetica", 11, "bold"))
         shap_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
@@ -436,7 +434,6 @@ class StudentFormApp:
         shap_text.pack(padx=10, pady=5, fill="both", expand=True)
 
 
-   
 
 # Run the app
 if __name__ == "__main__":
