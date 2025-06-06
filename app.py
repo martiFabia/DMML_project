@@ -13,9 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'notebook'))
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
 
-
-
-# Categorical features and example values
+# Categorical features
 categorical_features = {
     'Application_mode': [
         "1 - 1st phase - general contingent",
@@ -230,7 +228,7 @@ class StudentFormApp:
         scrollbar.pack(side="right", fill="y")
 
         # --- Title and description ---
-        tk.Label(self.scrollable_frame, text="🎓 Student Outcome Predictor", font=("Helvetica", 16, "bold")).grid(
+        tk.Label(self.scrollable_frame, text="🎓 Student Outcome Predictor", font=("Helvetica", 18, "bold")).grid(
                 row=0, column=0, columnspan=4, pady=(10, 5), sticky="n")
 
         tk.Label(self.scrollable_frame,
@@ -242,13 +240,14 @@ class StudentFormApp:
         row = 2
         self.inputs = {}
 
-        # Model selection
-        tk.Label(self.scrollable_frame, text="Select Model:").grid(row=row, column=0, sticky="e")
-        self.model_var = tk.StringVar()
-        model_dropdown = ttk.Combobox(self.scrollable_frame, textvariable=self.model_var,
-                                      values=["random_forest", "CatBoost"], state='readonly')
-        model_dropdown.set("random_forest")
-        model_dropdown.grid(row=row, column=1)
+        # Model 
+        tk.Label(
+            self.scrollable_frame,
+            text="Model:  Random Forest",
+            font=("Helvetica", 12, "bold")
+        ).grid(row=row, column=0, columnspan=4, sticky="n", pady=5)
+
+        
         row += 1
 
         # Pairing categorical and numerical features side by side
@@ -306,7 +305,7 @@ class StudentFormApp:
     
 
     def on_predict(self):
-        model_name = self.model_var.get().replace(" ", "").lower()
+        model_name = 'random_forest'
         model_path = f"models_SMOTE/best_model_{model_name}.joblib"
 
         if not os.path.exists(model_path):
@@ -363,7 +362,7 @@ class StudentFormApp:
             class_labels = ["Dropout", "Enrolled", "Graduate"]
             probs = dict(zip(class_labels, prob_array))
 
-            self.show_prediction_details(model_name=self.model_var.get(), probs=probs, shap_explanation=explanation_text)
+            self.show_prediction_details(model_name=model_name, probs=probs, shap_explanation=explanation_text)
             
 
         except Exception as e:
