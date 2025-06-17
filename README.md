@@ -1,6 +1,7 @@
 # Predicting Student Dropout in Higher Education Using Supervised Learning
 
-This project aims to develop a predictive model that classifies students into three possible academic outcomes: **Graduate**, **Enrolled**, or **Dropout**. The goal is to support higher education institutions in identifying students at risk and promoting timely and personalized interventions.
+This project aims to develop a predictive model that classifies students into three possible academic outcomes: **Graduate**, **Enrolled**, or **Dropout**.<br>
+The goal is to support higher education institutions in identifying students at risk and promoting timely and personalized interventions.
 
 ## 📚 Overview
 
@@ -38,12 +39,13 @@ A Python-based **Graphical User Interface** (built with Tkinter) allows users to
 - Access local SHAP explanations for each prediction
 
 ## 📂 Project Structure
-├── data/ # Raw and cleaned datasets
-├── models/ # Saved trained models
-├── shap_output/ # SHAP values 
-├── notebook/ # Jupyter notebooks
-├── app.py/ # GUI application
-├── utils/ # Preprocessing and feature engineering modules
+├── data/ # Raw and cleaned datasets <br>
+├── models/ # Saved trained models<br>
+├── shap_output/ # SHAP values <br>
+├── notebook/ # Jupyter notebooks<br>
+├── utils/ # Preprocessing and feature engineering modules<br>
+├── results/ # Model comparison results <br>
+├── app.py/ # GUI application<br>
 └── README.md
 
 
